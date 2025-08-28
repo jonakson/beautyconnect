@@ -1,0 +1,45 @@
+{
+  "name": "beautyconnect",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SaaS booking & business management platform for beauty, wellness, and fitness businesses",
+  "workspaces": [
+    "frontend",
+    "backend", 
+    "shared"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "type-check:shared": "npm run type-check --workspace=shared",
+    "build:shared": "npm run build --workspace=shared",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "rm -rf frontend/dist frontend/.next backend/dist shared/dist",
+    "docker:up": "docker compose up",
+    "docker:build": "docker compose build",
+    "docker:down": "docker compose down"
+  },
+  "keywords": [
+    "booking",
+    "saas",
+    "beauty",
+    "wellness",
+    "fitness",
+    "appointments",
+    "scheduling"
+  ],
+  "author": "BeautyConnect Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
