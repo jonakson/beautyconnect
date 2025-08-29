@@ -1,0 +1,51 @@
+# Backend API Service Stack
+# Deploy: docker compose -f compose.backend.yml up -d --build
+# This service can be redeployed independently without affecting databases
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: beautyconnect_backend
+    ports:
+      - "${API_PORT:-4000}:4000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - DATABASE_URL=postgresql://${DATABASE_USER:-beautyconnect_user}:${POSTGRES_PASSWORD:-beautyconnect_pass}@${DATABASE_HOST:-postgres}:5432/${DATABASE_NAME:-beautyconnect}
+      - REDIS_URL=redis://${REDIS_HOST:-redis}:6379
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET:-your_jwt_access_secret_key_here}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-your_jwt_refresh_secret_key_here}
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://frontend:3000}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    networks:
+      - beautyconnect_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+networks:
+  beautyconnect_network:
+    name: beautyconnect_network
+    driver: bridge
+    external: true  # Must be created before deployment

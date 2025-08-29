@@ -1,0 +1,44 @@
+# PostgreSQL Database Stack
+# Deploy: docker compose -f compose.postgres.yml up -d
+# This service runs independently and persists between deployments
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: beautyconnect_postgres
+    environment:
+      - POSTGRES_DB=beautyconnect
+      - POSTGRES_USER=beautyconnect_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-beautyconnect_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/prisma/migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - beautyconnect_network
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beautyconnect_user -d beautyconnect"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+    driver: local
+    name: beautyconnect_postgres_data
+
+networks:
+  beautyconnect_network:
+    name: beautyconnect_network
+    driver: bridge
+    external: true  # Must be created before deployment

@@ -1,0 +1,40 @@
+# Redis Cache Stack
+# Deploy: docker compose -f compose.redis.yml up -d
+# This service runs independently and persists between deployments
+
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: beautyconnect_redis
+    command: redis-server --appendonly yes --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - beautyconnect_network
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  redis_data:
+    driver: local
+    name: beautyconnect_redis_data
+
+networks:
+  beautyconnect_network:
+    name: beautyconnect_network
+    driver: bridge
+    external: true  # Must be created before deployment
